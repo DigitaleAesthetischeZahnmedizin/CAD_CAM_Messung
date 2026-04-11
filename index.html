@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>3D Zahn-Visualisierung</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <script type="importmap">
     {
       "imports": {
@@ -14,246 +16,865 @@
     }
   </script>
   <style>
-    body { margin: 0; display: flex; height: 100vh; }
-    #sidebar { width: 400px; background: #333; color: white; padding: 10px; position: relative; box-sizing: border-box; display: flex; flex-direction: column; }
-    #sidebar-content { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-    #resize-bar { position: absolute; top: 0; right: 0; width: 10px; height: 100%; cursor: ew-resize; background: #777; z-index: 10; }
-    #three-mount { flex-grow: 1; overflow: hidden; position: relative; }
-    .analysis-row { display: grid; gap: 6px; margin-top: 6px; }
-    .analysis-row.inline { grid-template-columns: 1fr 1fr; gap: 6px; align-items: center; }
-    .analysis-status { font-size: 12px; background: #222; border: 1px solid #555; padding: 6px; white-space: pre-wrap; }
-    .analysis-status.ok { color: #91e5bc; }
-    .analysis-status.warn { color: #ffd48a; }
-    .analysis-status.err { color: #ffaaaa; }
-    .role-badge { display: inline-block; border: 1px solid #666; border-radius: 999px; padding: 1px 6px; font-size: 11px; margin-left: 4px; color: #ddd; }
-    .role-badge.ref { border-color: #2f5e87; color: #9cd2ff; }
-    .role-badge.target { border-color: #7d5b2d; color: #ffd29c; }
-    .analysis-compact { font-size: 12px; line-height: 1.3; color: #ddd; }
-    
-    .analysis-tooltip { position: absolute; pointer-events: none; background: rgba(8,10,14,.95); color: white; border: 1px solid #445; border-radius: 8px; padding: 6px 8px; font-size: 12px; white-space: nowrap; transform: translate(12px, 12px); z-index: 10; display: none; }
-    
-    .analysis-legend { position: absolute; right: 12px; bottom: 12px; width: 190px; background: rgba(10,12,16,.92); border: 1px solid #445; border-radius: 8px; padding: 8px; z-index: 9; display: none; color: white; font-size: 12px; }
-    .analysis-legend-title { font-size: 12px; margin-bottom: 4px; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root, [data-theme="dark"] {
+      --bg-primary: #0f1117;
+      --bg-secondary: #181a22;
+      --bg-tertiary: #1e2029;
+      --bg-elevated: #252730;
+      --border: #2e3140;
+      --border-hover: #3e4258;
+      --text-primary: #e8eaf0;
+      --text-secondary: #9ba2b8;
+      --text-muted: #636a82;
+      --accent: #5b8af5;
+      --accent-hover: #4a78e0;
+      --accent-dim: rgba(91,138,245,0.12);
+      --green: #3cd89b;
+      --yellow: #f5c842;
+      --red: #f55b5b;
+      --ref-color: #5ba8f5;
+      --target-color: #f5a95b;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+      --overlay-bg: rgba(15,17,23,0.92);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --font-body: 'DM Sans', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --sidebar-width: 380px;
+      --transition: 180ms ease;
+    }
+
+    [data-theme="light"] {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f4f5f7;
+      --bg-tertiary: #ebedf0;
+      --bg-elevated: #e2e4e8;
+      --border: #d0d3da;
+      --border-hover: #b8bcc6;
+      --text-primary: #1a1d26;
+      --text-secondary: #52576a;
+      --text-muted: #8b90a0;
+      --accent: #3b6de6;
+      --accent-hover: #2f5bcf;
+      --accent-dim: rgba(59,109,230,0.1);
+      --green: #1aab6e;
+      --yellow: #c9960a;
+      --red: #d94040;
+      --ref-color: #2b7de0;
+      --target-color: #d48520;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
+      --overlay-bg: rgba(255,255,255,0.94);
+    }
+
+    body {
+      margin: 0;
+      display: flex;
+      height: 100vh;
+      font-family: var(--font-body);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      overflow: hidden;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+
+    /* Light theme checkbox fix */
+    [data-theme="light"] input[type="checkbox"]:checked {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    [data-theme="light"] input[type="checkbox"]:checked::after {
+      color: #fff;
+    }
+    [data-theme="light"] .role-badge.ref { background: rgba(43,125,224,0.1); color: var(--ref-color); border: 1px solid rgba(43,125,224,0.25); }
+    [data-theme="light"] .role-badge.target { background: rgba(212,133,32,0.1); color: var(--target-color); border: 1px solid rgba(212,133,32,0.25); }
+    [data-theme="light"] .model-control.is-ref { border-color: rgba(43,125,224,0.35); }
+    [data-theme="light"] .model-control.is-target { border-color: rgba(212,133,32,0.35); }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      width: var(--sidebar-width);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+      z-index: 20;
+      transition: transform 0.3s ease, width 0s;
+    }
+
+    .sidebar-header {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .sidebar-header h1 {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    .sidebar-header h1 span { color: var(--accent); }
+
+    .theme-toggle {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg-tertiary);
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      transition: all var(--transition);
+      flex-shrink: 0;
+    }
+    .theme-toggle:hover { background: var(--bg-elevated); border-color: var(--border-hover); }
+
+    #sidebar-toggle-btn {
+      display: none;
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 100;
+      width: 40px; height: 40px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 18px;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(12px);
+    }
+
+    #sidebar-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 14px 200px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    #resize-bar {
+      position: absolute;
+      top: 0; right: -3px;
+      width: 6px; height: 100%;
+      cursor: ew-resize;
+      z-index: 25;
+      background: transparent;
+      transition: background var(--transition);
+    }
+    #resize-bar:hover, #resize-bar:active {
+      background: var(--accent);
+    }
+
+    /* ── Sidebar Section (Collapsible) ── */
+    .sidebar-section {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      transition: border-color var(--transition);
+    }
+    .sidebar-section:hover { border-color: var(--border-hover); }
+
+    .section-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 14px;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      user-select: none;
+      text-align: left;
+      transition: background var(--transition);
+    }
+    .section-toggle:hover { background: rgba(255,255,255,0.03); }
+    .section-toggle::after {
+      content: '▾';
+      font-size: 10px;
+      color: var(--text-muted);
+      transition: transform var(--transition);
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+    .sidebar-section.collapsed .section-toggle::after {
+      transform: rotate(-90deg);
+    }
+    .section-body {
+      padding: 6px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sidebar-section.collapsed .section-body {
+      display: none;
+    }
+
+    .count-badge {
+      background: var(--accent-dim);
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 99px;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    /* ── Model List ── */
+    .model-controls-scroll {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* ── Form Elements ── */
+    label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      line-height: 1.4;
+    }
+    label b { color: var(--text-primary); font-weight: 600; }
+
+    input[type="text"], input[type="number"], select {
+      width: 100%;
+      padding: 7px 10px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      outline: none;
+      transition: border-color var(--transition);
+    }
+    input[type="text"]:focus, input[type="number"]:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-dim);
+    }
+    input[type="text"]::placeholder { color: var(--text-muted); }
+
+    input[type="color"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 30px; height: 26px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: none;
+      cursor: pointer;
+      padding: 2px;
+    }
+    input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    input[type="color"]::-webkit-color-swatch { border: none; border-radius: 3px; }
+
+    /* Range Slider */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      outline: none;
+      margin: 6px 0;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: 2px solid var(--bg-secondary);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      transition: transform var(--transition);
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    input[type="range"]::-moz-range-thumb {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: 2px solid var(--bg-secondary);
+    }
+
+    /* Checkbox */
+    input[type="checkbox"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px; height: 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg-primary);
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+      transition: all var(--transition);
+    }
+    input[type="checkbox"]:checked {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    input[type="checkbox"]:checked::after {
+      content: '✓';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #fff;
+      font-weight: 700;
+    }
+    input[type="checkbox"]:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    /* Buttons */
+    button {
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition);
+      white-space: nowrap;
+    }
+    button:hover:not(:disabled) {
+      background: var(--border);
+      border-color: var(--border-hover);
+    }
+    button:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    button.btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+    button.btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+    }
+
+    .btn-danger {
+      background: rgba(245,91,91,0.12) !important;
+      color: var(--red) !important;
+      border-color: rgba(245,91,91,0.25) !important;
+      padding: 4px 10px;
+      font-size: 11px;
+    }
+    .btn-danger:hover { background: rgba(245,91,91,0.22) !important; }
+
+    /* ── Specific Sections ── */
+    .analysis-row { display: flex; flex-direction: column; gap: 6px; }
+    .analysis-row.inline { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
+
+    .analysis-status {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.5;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .analysis-status.ok { color: var(--green); border-color: rgba(60,216,155,0.2); }
+    .analysis-status.warn { color: var(--yellow); border-color: rgba(245,200,66,0.2); }
+    .analysis-status.err { color: var(--red); border-color: rgba(245,91,91,0.2); }
+
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 1px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-left: 6px;
+    }
+    .role-badge.ref { background: rgba(91,168,245,0.12); color: var(--ref-color); border: 1px solid rgba(91,168,245,0.25); }
+    .role-badge.target { background: rgba(245,169,91,0.12); color: var(--target-color); border: 1px solid rgba(245,169,91,0.25); }
+
+    .analysis-compact { font-size: 11px; line-height: 1.4; color: var(--text-muted); }
+
+    .val-display {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    /* ── Three.js Mount ── */
+    #three-mount {
+      flex-grow: 1;
+      overflow: hidden;
+      position: relative;
+      background: var(--bg-primary);
+    }
+
+    /* ── Tooltip ── */
+    .analysis-tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: var(--overlay-bg);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 5px 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      white-space: nowrap;
+      transform: translate(14px, 14px);
+      z-index: 10;
+      display: none;
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* ── Legend ── */
+    .analysis-legend {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      width: 195px;
+      background: var(--overlay-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px;
+      z-index: 9;
+      display: none;
+      color: var(--text-primary);
+      font-size: 11px;
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow-md);
+    }
+    .analysis-legend-title { font-size: 11px; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); }
     .analysis-legend-wrap { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: stretch; }
-    .analysis-legend-bar { width: 22px; min-height: 286px; border: 1px solid #556; border-radius: 2px; background: linear-gradient(180deg,#d80000 0%,#0a00cc 100%); position: relative; overflow: hidden; }
-    .analysis-legend-ticks { display: grid; grid-template-rows: repeat(14, 1fr); min-height: 286px; align-items: center; font-size: 11px; color: #e3e9f4; line-height: 1; }
+    .analysis-legend-bar { width: 22px; min-height: 286px; border: 1px solid var(--border); border-radius: 3px; background: linear-gradient(180deg,#d80000 0%,#0a00cc 100%); position: relative; overflow: hidden; }
+    .analysis-legend-ticks { display: grid; grid-template-rows: repeat(14, 1fr); min-height: 286px; align-items: center; font-size: 10px; font-family: var(--font-mono); color: var(--text-secondary); line-height: 1; }
     .analysis-legend-tick { display: flex; align-items: center; justify-content: flex-start; gap: 4px; white-space: nowrap; font-variant-numeric: tabular-nums; }
-    .analysis-legend-tick.zero { color: #bfc9da; }
+    .analysis-legend-tick.zero { color: var(--text-primary); }
     .analysis-legend-tick.green-th { font-weight: 700; color: #ffffff; }
-    .analysis-legend-tick::before { content: ''; width: 6px; height: 1px; background: #7f8ba0; opacity: .65; flex: 0 0 auto; }
+    [data-theme="light"] .analysis-legend-tick.green-th { color: #1a6b3a; }
+    .analysis-legend-tick::before { content: ''; width: 6px; height: 1px; background: var(--text-muted); opacity: .5; flex: 0 0 auto; }
     .analysis-legend-labels { display: none; }
     .analysis-legend-center { display: none; }
     .analysis-legend-thresholds { display: none; }
     .analysis-legend-chip { display: none; }
-    .analysis-legend-subtle { margin-top: 6px; color: #9fb0c6; font-size: 10px; display: none; } 
-    
-    .sidebar-section { border: 1px solid #666; padding: 8px; margin-bottom: 10px; }
-    .model-control { border: 1px solid #555; padding: 6px; margin-top: 6px; }
-    .small-input { width: 60px; }
-    #sun-fan-controls { background: #2a2d35; border: 1px dashed #667; padding: 10px; border-radius: 6px; margin-top: 8px; display: none !important; } 
-    .sun-fan-val { font-weight: bold; color: #9cd2ff; float: right; }
+    .analysis-legend-subtle { margin-top: 6px; color: var(--text-muted); font-size: 10px; display: none; }
 
-    /* CSS für angepinnte Messungen */
+    /* ── Model Controls ── */
+    .model-control {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      overflow: hidden;
+      transition: border-color var(--transition);
+    }
+    .model-control:hover { border-color: var(--border-hover); }
+    .model-control.is-ref { border-color: rgba(91,168,245,0.35); }
+    .model-control.is-target { border-color: rgba(245,169,91,0.35); }
+
+    .model-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: background var(--transition);
+    }
+    .model-header:hover { background: rgba(255,255,255,0.025); }
+
+    .model-vis-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .model-name {
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--text-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+      min-width: 0;
+    }
+    .mc-chevron {
+      font-size: 9px;
+      color: var(--text-muted);
+      margin-left: auto;
+      flex-shrink: 0;
+      transition: transform var(--transition);
+    }
+    .model-control.mc-collapsed .mc-chevron { transform: rotate(-90deg); }
+    .model-body {
+      padding: 6px 10px 10px;
+      border-top: 1px solid var(--border);
+    }
+    .model-control.mc-collapsed .model-body { display: none; }
+
+    .model-control label { font-size: 12px; }
+    .model-control .model-actions {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .model-control .model-props {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 4px 8px;
+      align-items: center;
+    }
+    .small-input { width: 64px; }
+
+    /* ── Pinned Measurements ── */
     #measurement-lines-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
-    .measurement-line { stroke: #999; stroke-width: 1.5px; filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.5)); }
+    .measurement-line { stroke: #666; stroke-width: 1.5px; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.6)); }
     .pinned-measurement {
       position: absolute;
-      background: #2a2d35;
-      color: #fff;
-      border: 1px solid #666;
-      padding: 4px 8px;
+      background: var(--overlay-bg);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      font-family: var(--font-mono);
       font-size: 12px;
-      font-weight: bold;
-      border-radius: 4px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
       cursor: move;
       user-select: none;
       transform: translate(-50%, -50%);
       white-space: nowrap;
       z-index: 15;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+      box-shadow: var(--shadow-md);
       font-variant-numeric: tabular-nums;
+      backdrop-filter: blur(8px);
     }
-    .pinned-measurement:hover { border-color: #aaa; background: #353842; }
-    .btn-danger { background: #900; color: white; border: none; padding: 4px 8px; cursor: pointer; border-radius: 4px; }
-    .btn-danger:hover { background: #c00; }
+    .pinned-measurement:hover { border-color: var(--accent); }
 
-    /* CSS für Abschnitt-Vermessung (Schnittebene) */
+    /* ── Section SVG ── */
     #section-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 6; display: none; }
-    .section-draw-line { stroke: #ffcc00; stroke-width: 2px; stroke-dasharray: 4; }
+    .section-draw-line { stroke: var(--yellow); stroke-width: 2px; stroke-dasharray: 6 3; }
+
+    /* ── Sun Fan Controls ── */
+    #sun-fan-controls { background: var(--bg-primary); border: 1px solid var(--border); padding: 10px; border-radius: var(--radius-sm); margin-top: 6px; display: none !important; }
+    .sun-fan-val { font-family: var(--font-mono); font-weight: 600; color: var(--accent); float: right; }
+
+    /* ── Flex helpers ── */
+    .row { display: flex; align-items: center; gap: 8px; }
+    .row-between { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+    .hint { font-size: 11px; color: var(--text-muted); line-height: 1.35; }
+
+    /* ── Responsive ── */
+    @media (max-width: 800px) {
+      #sidebar {
+        position: fixed;
+        left: 0; top: 0;
+        height: 100vh;
+        width: 85vw !important;
+        max-width: 380px;
+        transform: translateX(-100%);
+        z-index: 50;
+        box-shadow: 8px 0 40px rgba(0,0,0,0.6);
+      }
+      #sidebar.open { transform: translateX(0); }
+      #sidebar-toggle-btn { display: flex; }
+      #resize-bar { display: none; }
+      #three-mount { width: 100vw !important; }
+      .sidebar-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 40;
+      }
+      .sidebar-backdrop.visible { display: block; }
+    }
   </style>
 </head>
 <body>
+  <button id="sidebar-toggle-btn" aria-label="Menü öffnen">☰</button>
+  <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
   <div id="sidebar">
+    <div class="sidebar-header">
+      <h1>🦷 <span>3D</span> Zahn-Visualisierung</h1>
+      <button id="theme-toggle-btn" class="theme-toggle" title="Theme wechseln" aria-label="Theme wechseln">☀️</button>
+    </div>
     <div id="sidebar-content">
-      
-      <div class="sidebar-section">
-        <label>3D Modell per Weblink (STL / PLY):</label>
-        <input type="text" id="model-url-input" placeholder="http://...modell.ply" style="width:100%; margin-top:4px;" />
-        <label style="display:block; margin-top:6px;">Textur per Weblink (Optional, JPG):</label>
-        <input type="text" id="texture-url-input" placeholder="http://...textur.jpg" style="width:100%; margin-top:4px;" />
-        <button id="load-url-button" style="margin-top:8px;">Modell laden</button>
-      </div>
 
+      <!-- Modell laden per URL -->
       <div class="sidebar-section">
-        <input type="file" id="file-input" accept=".stl,.ply,.jpg,.jpeg,.png" multiple style="display:none" />
-        <button id="add-model-button">+ Lokales Modell / Textur hinzufügen</button>
-        <div style="font-size:11px; color:#aaa; margin-top:6px; line-height:1.3;">
-          Wähle für Modelle mit Textur die <b>.ply</b> und die <b>.jpg</b> Datei gleichzeitig aus, um sie kombiniert zu laden.
+        <button class="section-toggle" type="button">Modell per Weblink laden</button>
+        <div class="section-body">
+          <label>3D Modell (STL / PLY)</label>
+          <input type="text" id="model-url-input" placeholder="https://...modell.ply" />
+          <label>Textur (Optional, JPG)</label>
+          <input type="text" id="texture-url-input" placeholder="https://...textur.jpg" />
+          <button id="load-url-button" class="btn-primary" style="align-self:flex-start;">Modell laden</button>
         </div>
       </div>
 
+      <!-- Lokales Modell -->
       <div class="sidebar-section">
-        <label>Skalierung für alle Modelle:</label>
-        <input type="range" id="global-scale-input" min="0.1" max="2" step="0.1" value="1.0" />
-        <br>
-        <label>Aktuelle Skalierung: <span id="current-scale">1.0</span></label>
+        <button class="section-toggle" type="button">Lokales Modell / Textur</button>
+        <div class="section-body">
+          <input type="file" id="file-input" accept=".stl,.ply,.jpg,.jpeg,.png" multiple style="display:none" />
+          <button id="add-model-button" class="btn-primary" style="width:100%;">+ Datei auswählen</button>
+          <p class="hint">Wähle für Modelle mit Textur die <b>.ply</b> und die <b>.jpg</b> Datei gleichzeitig aus, um sie kombiniert zu laden.</p>
+        </div>
       </div>
 
-      <div class="sidebar-section" style="display: none;">
-        <label>FOV (Field of View):</label>
-        <input type="range" id="fov-input" min="1" max="180" step="1" value="20" />
-        <br>
-        <label>Aktuelles FOV: <span id="current-fov">20</span></label>
-      </div>
-
+      <!-- Anzeige-Einstellungen -->
       <div class="sidebar-section">
-        <label>Hintergrundfarbe:</label>
-        <input type="color" id="bg-color-input" value="#ffffff" />
+        <button class="section-toggle" type="button">Anzeige-Einstellungen</button>
+        <div class="section-body">
+          <div class="row-between">
+            <label>Skalierung: <span class="val-display" id="current-scale">1.0</span></label>
+          </div>
+          <input type="range" id="global-scale-input" min="0.1" max="2" step="0.1" value="1.0" />
+
+          <div style="display:none;">
+            <label>FOV: <span id="current-fov">20</span></label>
+            <input type="range" id="fov-input" min="1" max="180" step="1" value="20" />
+          </div>
+
+          <div class="row-between">
+            <label>Hintergrundfarbe</label>
+            <input type="color" id="bg-color-input" value="#ffffff" />
+          </div>
+
+          <label><input type="checkbox" id="grid-toggle" checked> Gitter anzeigen</label>
+        </div>
       </div>
 
-      <div class="sidebar-section">
-        <label>Gitter anzeigen:</label>
-        <input type="checkbox" id="grid-toggle" checked>
-      </div>
-
+      <!-- Kamera (hidden) -->
       <div class="sidebar-section" id="camera-controls" style="display:none;">
-        <label>Kameraposition</label><br>
-        <label>X: </label><input type="number" id="camera-x" value="0" step="0.1"><br>
-        <label>Y: </label><input type="number" id="camera-y" value="20" step="0.1"><br>
-        <label>Z: </label><input type="number" id="camera-z" value="120" step="0.1"><br>
-        <button id="update-camera-button" style="margin-top:4px;">Kamera aktualisieren</button>
+        <button class="section-toggle" type="button">Kameraposition</button>
+        <div class="section-body">
+          <label>X: <input type="number" id="camera-x" value="0" step="0.1"></label>
+          <label>Y: <input type="number" id="camera-y" value="20" step="0.1"></label>
+          <label>Z: <input type="number" id="camera-z" value="120" step="0.1"></label>
+          <button id="update-camera-button">Kamera aktualisieren</button>
+        </div>
       </div>
 
+      <!-- STL/PLY Vergleich -->
       <div class="sidebar-section" id="analysis-section">
-        <div><strong>STL/PLY Vergleich (Heatmap / Messung)</strong></div>
+        <button class="section-toggle" type="button">STL/PLY Vergleich (Heatmap / Messung)</button>
+        <div class="section-body">
+          <div class="analysis-row">
+            <label>Referenz/Ziel über Modellliste unten festlegen</label>
+            <button id="analysis-build-bvh-button" class="btn-primary" disabled>Messung vorbereiten</button>
+          </div>
 
-        <div class="analysis-row">
-          <label>Referenz/Ziel über Modellliste unten festlegen</label>
-          <button id="analysis-build-bvh-button" disabled>Messung vorbereiten</button>
-        </div>
-
-        <div class="analysis-row" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-          <label><input type="checkbox" id="analysis-heatmap-toggle" disabled> Heatmap anzeigen</label>
-          <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="row-between" style="flex-wrap:wrap; gap:6px;">
+            <label><input type="checkbox" id="analysis-heatmap-toggle" disabled> Heatmap anzeigen</label>
+            <div class="row">
               <label><input type="checkbox" id="analysis-hover-toggle" disabled> Maus-Messung (Pins)</label>
-              <button id="clear-pins-button" class="btn-danger" style="display:none; font-size:11px;">Alle Pins löschen</button>
+              <button id="clear-pins-button" class="btn-danger" style="display:none;">Alle Pins löschen</button>
+            </div>
           </div>
-        </div>
 
-        <div class="analysis-row">
-          <label>Punktgröße (Pins): <span id="pin-point-size-val" style="font-weight:bold; color:#9cd2ff;">0.25 mm</span></label>
-          <input type="range" id="pin-point-size-input" min="0.05" max="1.0" step="0.05" value="0.25" style="width:100%;">
-        </div>
-
-        <div class="analysis-row">
-          <label>Grünbereich ± (mm)</label>
-          <input type="number" id="analysis-threshold-green" min="0.001" step="0.001" value="0.050" style="width:100%;" disabled>
-        </div>
-        <div class="analysis-row">
-          <label>Gelb/Rot & Hellblau/Dunkelblau ± (mm)</label>
-          <input type="number" id="analysis-threshold-mid" min="0.001" step="0.001" value="1.100" style="width:100%;" disabled>
-        </div>
-        <div class="analysis-row">
-          <label>Maximalgrenzwert ± (mm)</label>
-          <input type="number" id="analysis-heatmap-max" min="0.001" step="0.001" value="4.000" style="width:100%;" disabled>
-        </div>
-        
-        <div class="analysis-row" style="display:none;">
-          <label>Einheit</label>
-          <select id="analysis-unit" style="width:100%;" disabled>
-            <option value="mm">mm</option>
-          </select>
-        </div>
-
-        <div class="analysis-row inline">
-          <div>
-            <label>Heatmap Transparenz (Ziel)</label><br>
-            <input type="range" id="analysis-heatmap-opacity" min="0.05" max="1" step="0.01" value="0.85" disabled style="width:100%;">
+          <div class="analysis-row">
+            <div class="row-between">
+              <label>Punktgröße (Pins)</label>
+              <span class="val-display" id="pin-point-size-val">0.25 mm</span>
+            </div>
+            <input type="range" id="pin-point-size-input" min="0.05" max="1.0" step="0.05" value="0.25">
           </div>
-          <div>
-            <label>Opazität</label><br>
-            <div id="analysis-heatmap-opacity-value" style="padding:6px 8px;border:1px solid #555;border-radius:4px;">0.85</div>
-          </div>
-        </div>
 
-        <div class="analysis-row">
-          <select id="analysis-heatmap-mode" style="display:none;" disabled>
-            <option value="signed" selected>signiert (+/-)</option>
-          </select>
-          <button id="analysis-recompute-button" disabled>Heatmap neu berechnen</button>
-        </div>
+          <div class="analysis-row">
+            <label>Grünbereich ± (mm)</label>
+            <input type="number" id="analysis-threshold-green" min="0.001" step="0.001" value="0.050" disabled>
+          </div>
+          <div class="analysis-row">
+            <label>Gelb/Rot & Hellblau/Dunkelblau ± (mm)</label>
+            <input type="number" id="analysis-threshold-mid" min="0.001" step="0.001" value="1.100" disabled>
+          </div>
+          <div class="analysis-row">
+            <label>Maximalgrenzwert ± (mm)</label>
+            <input type="number" id="analysis-heatmap-max" min="0.001" step="0.001" value="4.000" disabled>
+          </div>
 
-        <div class="analysis-row" style="display:none;">
-          <label>Messstrategie</label>
-          <select id="analysis-measurement-strategy" style="width:100%;" disabled>
-            <option value="sun_fan" selected>Sonne / Fächer (Iterativ, hochpräzise)</option>
-          </select>
-        </div>
+          <div style="display:none;">
+            <select id="analysis-unit" disabled><option value="mm">mm</option></select>
+          </div>
 
-        <div id="sun-fan-controls">
-          <div style="font-size:11px; color:#bbb; margin-bottom: 8px;">
-            Achtung: Hohe Werte benötigen viel Rechenleistung.
+          <div class="analysis-row inline">
+            <div>
+              <label>Heatmap Transparenz (Ziel)</label>
+              <input type="range" id="analysis-heatmap-opacity" min="0.05" max="1" step="0.01" value="0.85" disabled>
+            </div>
+            <div>
+              <label>Opazität</label>
+              <div id="analysis-heatmap-opacity-value" class="val-display" style="padding:6px 0;">0.85</div>
+            </div>
           </div>
-          <div style="margin-bottom: 6px;">
-            <label>Strahlen pro Stufe: <span class="sun-fan-val" id="sun-fan-ray-val">256</span></label>
-            <input type="range" id="sun-fan-rays" min="8" max="256" step="8" value="256" style="width:100%;">
-          </div>
-          <div style="margin-bottom: 8px;">
-            <label>Iterationen (Stufen): <span class="sun-fan-val" id="sun-fan-stage-val">5</span></label>
-            <input type="range" id="sun-fan-stages" min="1" max="5" step="1" value="5" style="width:100%;">
-          </div>
-          <div style="padding-top: 6px; border-top: 1px solid #444;">
-            <label style="display:flex; align-items:center; gap:6px; font-size:11.5px; cursor:pointer;">
-              <input type="checkbox" id="sun-fan-prevent-penetration" checked>
-              Leerräume / Lücken überspringen (Sichtlinien-Prüfung)
-            </label>
-          </div>
-        </div>
 
-        <div class="analysis-row">
-          <div style="display:none;">Referenz: <span id="analysis-ref-name">—</span></div>
-          <div style="display:none;">Ziel: <span id="analysis-target-name">—</span></div>
-          <div style="display:none;">Hover: <span id="analysis-hover-value">Δ = —</span></div>
-          <div style="font-size: 11px; color: #aaa; margin-top: -2px;">(Klicke auf das Modell bei aktiver Maus-Messung, um Pins zu setzen)</div>
-          <div id="analysis-status" class="analysis-status warn">Bitte Referenz- und Zielmodell festlegen.</div>
+          <div class="analysis-row">
+            <select id="analysis-heatmap-mode" style="display:none;" disabled>
+              <option value="signed" selected>signiert (+/-)</option>
+            </select>
+            <button id="analysis-recompute-button" disabled>Heatmap neu berechnen</button>
+          </div>
+
+          <div style="display:none;">
+            <select id="analysis-measurement-strategy" disabled>
+              <option value="sun_fan" selected>Sonne / Fächer (Iterativ, hochpräzise)</option>
+            </select>
+          </div>
+
+          <div id="sun-fan-controls">
+            <p class="hint" style="margin-bottom:8px;">Achtung: Hohe Werte benötigen viel Rechenleistung.</p>
+            <div style="margin-bottom:6px;">
+              <label>Strahlen pro Stufe: <span class="sun-fan-val" id="sun-fan-ray-val">256</span></label>
+              <input type="range" id="sun-fan-rays" min="8" max="256" step="8" value="256">
+            </div>
+            <div style="margin-bottom:8px;">
+              <label>Iterationen (Stufen): <span class="sun-fan-val" id="sun-fan-stage-val">5</span></label>
+              <input type="range" id="sun-fan-stages" min="1" max="5" step="1" value="5">
+            </div>
+            <div style="padding-top:6px; border-top:1px solid var(--border);">
+              <label style="cursor:pointer;">
+                <input type="checkbox" id="sun-fan-prevent-penetration" checked>
+                Leerräume / Lücken überspringen (Sichtlinien-Prüfung)
+              </label>
+            </div>
+          </div>
+
+          <div class="analysis-row">
+            <div style="display:none;">Referenz: <span id="analysis-ref-name">—</span></div>
+            <div style="display:none;">Ziel: <span id="analysis-target-name">—</span></div>
+            <div style="display:none;">Hover: <span id="analysis-hover-value">Δ = —</span></div>
+            <p class="hint">(Klicke auf das Modell bei aktiver Maus-Messung, um Pins zu setzen)</p>
+            <div id="analysis-status" class="analysis-status warn">Bitte Referenz- und Zielmodell festlegen.</div>
+          </div>
         </div>
       </div>
 
+      <!-- Abschnitt-Vermessung -->
       <div class="sidebar-section" id="section-analysis-section">
-        <div><strong>Abschnitt-Vermessung (2D Schnitt)</strong></div>
-        <div class="analysis-compact" style="margin-top:4px;">
-          Zieht eine Schnittebene (Clipping Plane) durch die Modelle zur exakten 2D-Kantenmessung.
-        </div>
-        <div class="analysis-row">
+        <button class="section-toggle" type="button">Abschnitt-Vermessung (2D Schnitt)</button>
+        <div class="section-body">
+          <p class="hint">Zieht eine Schnittebene (Clipping Plane) durch die Modelle zur exakten 2D-Kantenmessung.</p>
           <label style="cursor:pointer;"><input type="checkbox" id="section-draw-toggle" disabled> Schnittebene zeichnen (Klick & Drag)</label>
-        </div>
-        <div class="analysis-row" style="display: flex; gap: 8px; align-items: center;">
-          <label style="cursor:pointer;"><input type="checkbox" id="section-measure-toggle" disabled> Auf Schnitt messen (Pins)</label>
-          <button id="clear-section-button" class="btn-danger" style="display:none; font-size:11px;">Schnitt verwerfen</button>
+          <div class="row" style="gap:8px;">
+            <label style="cursor:pointer;"><input type="checkbox" id="section-measure-toggle" disabled> Auf Schnitt messen (Pins)</label>
+            <button id="clear-section-button" class="btn-danger" style="display:none;">Schnitt verwerfen</button>
+          </div>
         </div>
       </div>
 
-      <div class="sidebar-section" id="model-controls"></div>
+      <!-- Modell-Steuerung -->
+      <div class="sidebar-section" id="models-section">
+        <button class="section-toggle" type="button">Geladene Modelle <span id="model-count-badge" class="count-badge" style="display:none;">0</span></button>
+        <div class="section-body" style="padding-bottom:6px;">
+          <div id="model-controls" class="model-controls-scroll"></div>
+        </div>
+      </div>
+
     </div>
     <div id="resize-bar"></div>
   </div>
-  
+
   <div id="three-mount">
     <div id="analysis-tooltip" class="analysis-tooltip"></div>
     <svg id="measurement-lines-svg"></svg>
-
-    <div id="analysis-legend" class="analysis-legend"><div id="analysis-legend-title" class="analysis-legend-title">Heatmap (signiert)</div><div class="analysis-legend-wrap"><div id="analysis-legend-bar" class="analysis-legend-bar"></div><div id="analysis-legend-ticks" class="analysis-legend-ticks"></div></div><div class="analysis-legend-labels"><span id="analysis-legend-left">-4.000 mm</span><span id="analysis-legend-center" class="analysis-legend-center">0</span><span id="analysis-legend-right">+4.000 mm</span></div><div id="analysis-legend-thresholds" class="analysis-legend-thresholds"></div><div id="analysis-legend-subtle" class="analysis-legend-subtle">M-Stil: feste Farbstufen / Schwellen</div></div>
+    <div id="analysis-legend" class="analysis-legend">
+      <div id="analysis-legend-title" class="analysis-legend-title">Heatmap (signiert)</div>
+      <div class="analysis-legend-wrap">
+        <div id="analysis-legend-bar" class="analysis-legend-bar"></div>
+        <div id="analysis-legend-ticks" class="analysis-legend-ticks"></div>
+      </div>
+      <div class="analysis-legend-labels">
+        <span id="analysis-legend-left">-4.000 mm</span>
+        <span id="analysis-legend-center" class="analysis-legend-center">0</span>
+        <span id="analysis-legend-right">+4.000 mm</span>
+      </div>
+      <div id="analysis-legend-thresholds" class="analysis-legend-thresholds"></div>
+      <div id="analysis-legend-subtle" class="analysis-legend-subtle">M-Stil: feste Farbstufen / Schwellen</div>
+    </div>
   </div>
+
+<script>
+  // Theme toggle
+  const themeBtn = document.getElementById('theme-toggle-btn');
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    themeBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    localStorage.setItem('tooth-viz-theme', theme);
+  }
+  themeBtn.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    setTheme(current === 'dark' ? 'light' : 'dark');
+  });
+  // Restore saved preference (default: light)
+  const saved = localStorage.getItem('tooth-viz-theme');
+  if (saved) setTheme(saved); else setTheme('light');
+
+  // Collapsible sections
+  document.querySelectorAll('.section-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.parentElement.classList.toggle('collapsed');
+    });
+  });
+
+  // Mobile sidebar toggle
+  const sidebarEl = document.getElementById('sidebar');
+  const toggleBtn = document.getElementById('sidebar-toggle-btn');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  
+  toggleBtn.addEventListener('click', () => {
+    sidebarEl.classList.toggle('open');
+    backdrop.classList.toggle('visible');
+  });
+  backdrop.addEventListener('click', () => {
+    sidebarEl.classList.remove('open');
+    backdrop.classList.remove('visible');
+  });
+</script>
 
 <script type="module">
     import * as THREE from 'three';
@@ -267,7 +888,7 @@
     THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
     let models = [];
-    let sidebarWidth = 400;
+    let sidebarWidth = 380;
     let globalScale = 1.0;
     let fov = 20;
 
@@ -877,7 +1498,7 @@
             refPoint: ptRefWorld.clone(),
             signedMm: distMm, 
             absMm: distMm,
-            colorHex: 'ffffff'
+            colorHex: heatColorMSignedByMm(distMm).getHexString()
         };
         return true; 
     }
@@ -1344,26 +1965,45 @@
 
     function updateModelControls() {
       modelControls.innerHTML = '';
+      const validCount = models.filter(m => m).length;
+      const badge = document.getElementById('model-count-badge');
+      if (badge) { badge.textContent = validCount; badge.style.display = validCount > 0 ? 'inline-block' : 'none'; }
+      
       models.forEach((model, index) => {
         if (!model) return;
         const isRef = analysisState.refIndex === index; const isTarget = analysisState.targetIndex === index;
-        const roleBadge = isRef ? '<span class="role-badge ref">Referenz</span>' : isTarget ? '<span class="role-badge target">Ziel</span>' : '';
+        const roleBadge = isRef ? '<span class="role-badge ref">REF</span>' : isTarget ? '<span class="role-badge target">ZIEL</span>' : '';
+        const shortName = model.name.length > 30 ? model.name.substring(0, 28) + '…' : model.name;
         const modelDiv = document.createElement('div'); modelDiv.className = 'model-control';
+        if (isRef) modelDiv.classList.add('is-ref');
+        if (isTarget) modelDiv.classList.add('is-target');
         modelDiv.innerHTML = `
-          <label>${escapeHtml(model.name)} ${roleBadge}</label><br>
+          <div class="model-header" onclick="this.parentElement.classList.toggle('mc-collapsed')">
+            <span class="model-vis-dot" style="background:${model.mesh ? '#' + model.material.color.getHexString() : '#333'};opacity:${model.visible ? 1 : 0.25};"></span>
+            <span class="model-name" title="${escapeHtml(model.name)}">${escapeHtml(shortName)}</span>
+            ${roleBadge}
+            <span class="mc-chevron">▾</span>
+          </div>
           ${model.mesh ? `
-            <input type="color" value="#${model.material.color.getHexString()}" onchange="window.updateColor(${index}, this.value)" />
-            <label>Transparenz</label>
-            <input type="range" id="model-opacity-${index}" min="0.05" max="1" step="0.01" value="${model.opacity}" onchange="window.updateOpacity(${index}, this.value)" />
-            <br><label>Anordnung</label>
-            <input type="number" class="small-input" value="${model.renderOrder}" onchange="window.updateRenderOrder(${index}, this.value)" />
-            <br><label>Modell Ein / Ausblenden</label>
-            <input type="checkbox" id="visibility-toggle-${index}" ${model.visible ? 'checked' : ''} onchange="window.toggleVisibility(${index}, this.checked)" />
-            <br><label>Wireframe</label>
-            <input type="checkbox" onchange="window.toggleWireframe(${index}, this.checked)" />
-            <br><button onclick="window.setAnalysisRole(${index}, 'ref')">Als Referenz</button>
-            <button onclick="window.setAnalysisRole(${index}, 'target')">Als Ziel</button>
-          ` : `<div style="color:#ffaaaa;">Laden fehlgeschlagen</div>`}
+            <div class="model-body">
+              <div class="model-props">
+                <label>Farbe</label>
+                <input type="color" value="#${model.material.color.getHexString()}" onchange="window.updateColor(${index}, this.value)" />
+                <label>Transparenz</label>
+                <input type="range" id="model-opacity-${index}" min="0.05" max="1" step="0.01" value="${model.opacity}" onchange="window.updateOpacity(${index}, this.value)" />
+                <label>Anordnung</label>
+                <input type="number" class="small-input" value="${model.renderOrder}" onchange="window.updateRenderOrder(${index}, this.value)" />
+              </div>
+              <div class="row" style="flex-wrap:wrap; gap:6px; margin-top:4px;">
+                <label><input type="checkbox" id="visibility-toggle-${index}" ${model.visible ? 'checked' : ''} onchange="window.toggleVisibility(${index}, this.checked)"> Sichtbar</label>
+                <label><input type="checkbox" onchange="window.toggleWireframe(${index}, this.checked)"> Wireframe</label>
+              </div>
+              <div class="model-actions" style="margin-top:4px;">
+                <button onclick="window.setAnalysisRole(${index}, 'ref')">Als Referenz</button>
+                <button onclick="window.setAnalysisRole(${index}, 'target')">Als Ziel</button>
+              </div>
+            </div>
+          ` : `<div class="model-body"><div style="color:var(--red);font-size:12px;">Laden fehlgeschlagen</div></div>`}
         `;
         modelControls.appendChild(modelDiv);
       });
@@ -1615,12 +2255,25 @@
     resizeBar.addEventListener('mousedown', (e) => { e.preventDefault(); isResizing = true; startX = e.clientX; startWidth = sidebarWidth; });
     document.addEventListener('mousemove', (e) => { if (!isResizing) return; e.preventDefault(); const newWidth = startWidth + (e.clientX - startX); if (newWidth > 150 && newWidth < (window.innerWidth - 50)) { sidebarWidth = newWidth; document.getElementById('sidebar').style.width = `${sidebarWidth}px`; renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight); camera.aspect = (window.innerWidth - sidebarWidth) / window.innerHeight; camera.updateProjectionMatrix(); } });
     document.addEventListener('mouseup', () => { isResizing = false; });
-    window.addEventListener('resize', () => { renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight); camera.aspect = (window.innerWidth - sidebarWidth) / window.innerHeight; camera.updateProjectionMatrix(); });
+    window.addEventListener('resize', () => { 
+      const isMobile = window.innerWidth <= 800;
+      const effectiveWidth = isMobile ? 0 : sidebarWidth;
+      renderer.setSize(window.innerWidth - effectiveWidth, window.innerHeight); 
+      camera.aspect = (window.innerWidth - effectiveWidth) / window.innerHeight; 
+      camera.updateProjectionMatrix(); 
+    });
 
     // Hinzugefügt aus der THREE.js Library für Mesh Instanzierung
     const { Mesh } = THREE;
 
-    window.onload = () => { renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight); camera.aspect = (window.innerWidth - sidebarWidth) / window.innerHeight; camera.updateProjectionMatrix(); syncMeasurementStrategyUi(); updateLegendUI(); updateAnalysisUIState(); };
+    window.onload = () => { 
+      const isMobile = window.innerWidth <= 800;
+      const effectiveWidth = isMobile ? 0 : sidebarWidth;
+      renderer.setSize(window.innerWidth - effectiveWidth, window.innerHeight); 
+      camera.aspect = (window.innerWidth - effectiveWidth) / window.innerHeight; 
+      camera.updateProjectionMatrix(); 
+      syncMeasurementStrategyUi(); updateLegendUI(); updateAnalysisUIState(); 
+    };
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { analysisState.hoverEnabled = false; analysisUI.hoverToggle.checked = false; sectionUI.drawToggle.checked = false; clearHoverVisuals(); updateAnalysisUIState(); } });
     analysisUI.status.addEventListener('dblclick', clearAnalysisRoles);
 
@@ -1644,15 +2297,13 @@
 
     Promise.allSettled(promises).then(results => {
       const resultsDiv = document.createElement('div');
-      resultsDiv.style.backgroundColor = '#222';
-      resultsDiv.style.color = '#fff';
-      resultsDiv.style.padding = '10px';
-      resultsDiv.innerHTML = '<h3>Modell-Ladeergebnisse:</h3>';
+      resultsDiv.style.cssText = 'background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;margin-top:8px;font-size:11px;color:var(--text-secondary);';
+      resultsDiv.innerHTML = '<div style="font-weight:600;margin-bottom:6px;color:var(--text-primary);">Modell-Ladeergebnisse:</div>';
       results.forEach((result, index) => {
         if (result.status === 'fulfilled') {
-          resultsDiv.innerHTML += `<p>Modell ${index + 1}: Erfolgreich geladen.</p>`;
+          resultsDiv.innerHTML += `<div style="color:var(--green);">Modell ${index + 1}: Erfolgreich geladen.</div>`;
         } else {
-          resultsDiv.innerHTML += `<p>Modell ${index + 1}: Fehler beim Laden.</p>`;
+          resultsDiv.innerHTML += `<div style="color:var(--red);">Modell ${index + 1}: Fehler beim Laden.</div>`;
         }
       });
       document.getElementById('sidebar-content').appendChild(resultsDiv);
