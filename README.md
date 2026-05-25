@@ -9,6 +9,20 @@ The application runs directly in the browser via GitHub Pages — no installatio
 
 ---
 
+## Table of contents
+
+- [Purpose](#purpose)
+- [Features](#features)
+- [Repository structure](#repository-structure)
+- [Quick guide: performing a measurement](#quick-guide-performing-a-measurement)
+- [Third-party libraries / license notices](#third-party-libraries--license-notices)
+- [License](#license)
+- [Notes & disclaimer](#notes--disclaimer)
+
+> 📖 The full user manual with screenshots is in **[`doc/README.md`](doc/README.md)**.
+
+---
+
 ## Purpose
 
 The program provides **objective visualization and measurement** of changes to teeth based on
@@ -17,7 +31,7 @@ with restorations in place).
 
 It is used in the context of an **independent procedure for the taking of evidence**
 ("selbständiges Beweisverfahren", §§ 485 et seq. of the German Code of Civil Procedure, ZPO)
-concerning an **alleged / disputed** veneer treatment fault at a dentist in Heilbronn. One of the
+concerning an **alleged / disputed** veneer treatment fault at a dentist in Heilbronn, Germany. One of the
 disputed points is whether the restorations are to be classified as veneers or as partial crowns.
 The application serves solely to illustrate the technical aspects of the matter in dispute.
 
@@ -46,6 +60,31 @@ The application serves solely to illustrate the technical aspects of the matter 
 | --- | --- |
 | `index.html` | The complete web application (3D viewer & measurement). |
 | `STL/` | The 3D models used for comparison. |
+| `doc/` | User manual with numbered screenshots (see below). |
+
+📖 **Documentation:** A detailed user manual is available in **[`doc/README.md`](doc/README.md)**.
+
+---
+
+## Quick guide: performing a measurement
+
+The following steps are required to perform a distance measurement between two models:
+
+1. Open the web page.
+2. Wait until all models have loaded (status at the bottom of the sidebar).
+3. In the "Loaded models" section: set one model as "reference" and another as "target".
+4. In the "STL/PLY comparison" section: click "Prepare measurement".
+5. Activate "Mouse measurement (pins)" — distances are now shown when hovering over the target model.
+6. Click on the model to place measurement points (pins).
+7. Optional: activate "Show heatmap" for an area-wide deviation display.
+8. Optional: use the section measurement for exact 2D cut measurements.
+
+**Keyboard shortcuts**
+
+- **ESC** — deactivate mouse measurement and cutting-plane drawing
+- **Mouse wheel** — zoom
+- **Left mouse button + drag** — rotate the model
+- **Right mouse button + drag** — pan the model
 
 ---
 

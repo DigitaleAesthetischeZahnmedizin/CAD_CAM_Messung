@@ -11,6 +11,20 @@ directly in the web browser — no installation required.
 
 ---
 
+## Table of contents
+
+1. [Overview](#1-overview)
+2. [User interface](#2-user-interface)
+3. [Managing loaded models](#3-managing-loaded-models)
+4. [STL/PLY comparison — settings](#4-stlply-comparison--settings)
+5. [Mouse measurement (pins)](#5-mouse-measurement-pins)
+6. [Heatmap display](#6-heatmap-display)
+7. [Section measurement (2D cut)](#7-section-measurement-2d-cut)
+8. [Face scan display](#8-face-scan-display)
+9. [Quick guide: performing a measurement](#9-quick-guide-performing-a-measurement)
+
+---
+
 ## 1. Overview
 
 The "3D Tooth Visualization" web application makes it possible to load, display, and precisely

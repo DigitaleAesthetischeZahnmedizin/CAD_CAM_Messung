@@ -9,6 +9,20 @@ Die Anwendung läuft direkt im Browser über GitHub Pages – ohne Installation.
 
 ---
 
+## Inhaltsverzeichnis
+
+- [Zweck](#zweck)
+- [Funktionen](#funktionen)
+- [Verzeichnisstruktur](#verzeichnisstruktur)
+- [Kurzanleitung: Messung durchführen](#kurzanleitung-messung-durchführen)
+- [Verwendete Bibliotheken / Lizenzhinweise](#verwendete-bibliotheken--lizenzhinweise)
+- [Lizenz](#lizenz)
+- [Hinweise & Haftungsausschluss](#hinweise--haftungsausschluss)
+
+> 📖 Die vollständige Bedienungsanleitung mit Screenshots findet sich in **[`doc/README.md`](doc/README.md)**.
+
+---
+
 ## Zweck
 
 Das Programm dient der **objektiven Visualisierung und Vermessung** von Veränderungen an Zähnen
@@ -16,7 +30,7 @@ anhand digitaler 3D-Scans aus unterschiedlichen Behandlungsphasen (z. B. vor und
 Präparation sowie mit eingesetzten Restaurationen).
 
 Es wird im Rahmen eines **selbständigen Beweisverfahrens** (§§ 485 ff. ZPO) genutzt, das einen
-**behaupteten bzw. strittigen** Veneer-Behandlungsfehler bei einem Zahnarzt in Heilbronn zum
+**behaupteten bzw. strittigen** Veneer-Behandlungsfehler bei einem Zahnarzt in Heilbronn (Deutschland) zum
 Gegenstand hat. Strittig ist dabei unter anderem, ob die Versorgung als Veneers oder als Teilkronen
 einzuordnen ist. Die Anwendung dient ausschließlich der technischen Veranschaulichung des
 streitgegenständlichen Sachverhalts.
@@ -47,6 +61,31 @@ streitgegenständlichen Sachverhalts.
 | --- | --- |
 | `index.html` | Die vollständige Web-Anwendung (3D-Viewer & Vermessung). |
 | `STL/` | Die für den Vergleich verwendeten 3D-Modelle. |
+| `doc/` | Bedienungsanleitung mit nummerierten Screenshots (siehe unten). |
+
+📖 **Dokumentation:** Eine ausführliche Bedienungsanleitung (Englisch) findet sich in **[`doc/README.md`](doc/README.md)**.
+
+---
+
+## Kurzanleitung: Messung durchführen
+
+Folgende Schritte sind nötig, um eine Abstandsmessung zwischen zwei Modellen durchzuführen:
+
+1. Webseite öffnen.
+2. Warten, bis alle Modelle geladen sind (Status unten in der Seitenleiste).
+3. Im Bereich „Geladene Modelle": Ein Modell als „Referenz" und ein anderes als „Ziel" festlegen.
+4. Im Bereich „STL/PLY Vergleich": Auf „Messung vorbereiten" klicken.
+5. „Maus-Messung (Pins)" aktivieren – beim Überfahren des Zielmodells werden nun Abstände angezeigt.
+6. Durch Klick auf das Modell Messpunkte (Pins) setzen.
+7. Optional: „Heatmap anzeigen" aktivieren für eine flächendeckende Abweichungsdarstellung.
+8. Optional: Abschnitt-Vermessung nutzen für exakte 2D-Schnittmessungen.
+
+**Tastenkombinationen**
+
+- **ESC** – Maus-Messung und Schnittebenen-Zeichnen deaktivieren
+- **Mausrad** – Zoom
+- **Linke Maustaste + Ziehen** – Modell drehen
+- **Rechte Maustaste + Ziehen** – Modell verschieben
 
 ---
 
