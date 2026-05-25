@@ -5,7 +5,7 @@
 Browser-based tool for **visualizing and measuring 3D tooth models** (STL/PLY).
 The application runs directly in the browser via GitHub Pages — no installation required.
 
-**Live application:** https://digitaleaesthetischezahnmedizin.github.io/CAD_CAM/
+**Live application:** https://digitaleaesthetischezahnmedizin.github.io/CAD_CAM_Messung/
 
 ---
 
