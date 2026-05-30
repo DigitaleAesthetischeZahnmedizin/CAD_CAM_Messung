@@ -5,7 +5,7 @@
 Browser-based tool for **visualizing and measuring 3D tooth models** (STL/PLY).
 The application runs directly in the browser via GitHub Pages — no installation required.
 
-**Live application:** https://digitaleaesthetischezahnmedizin.github.io/CAD_CAM/
+**Live application:** https://digitaleaesthetischezahnmedizin.github.io/CAD_CAM_Messung/
 
 ---
 
@@ -217,8 +217,6 @@ License text: https://creativecommons.org/licenses/by-nc-nd/4.0/
 
 ### Video
 
-<video src="media/clinical/Endoscope_Video.mp4" controls width="480">
-  Your browser cannot display the video.
-</video>
+<a href="media/clinical/Endoscope_Video.mp4"><img src="media/clinical/Video_Thumbnail.png" width="480" alt="Intraoral video — click to play"></a>
 
-*Intraoral video.* If the player does not appear above, open the file directly: [`media/clinical/Endoscope_Video.mp4`](media/clinical/Endoscope_Video.mp4)
+*Intraoral video — click the image to open and play it.*
